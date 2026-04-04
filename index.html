@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #7c6af7;
+    --accent-glow: rgba(124,106,247,0.25);
+    --teal: #2dd4bf;
+    --red: #f87171;
+    --green: #4ade80;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  /* ── Mic button ─────────────────────────────────────── */
+  .mic-wrap {
+    position: relative;
+    margin-bottom: 2.5rem;
+  }
+
+  .mic-ring {
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+
+  .mic-ring.pulse {
+    animation: ring-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes ring-pulse {
+    0%, 100% { opacity: 0.15; transform: scale(0.9); }
+    50%       { opacity: 0.5;  transform: scale(1.08); }
+  }
+
+  #mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    position: relative;
+    z-index: 1;
+  }
+
+  #mic-btn:hover { border-color: var(--accent); background: rgba(124,106,247,0.08); }
+  #mic-btn:active { transform: scale(0.95); }
+  #mic-btn.recording { border-color: var(--red); background: rgba(248,113,113,0.1); }
+  #mic-btn.recording svg { stroke: var(--red); }
+
+  #mic-btn svg {
+    width: 28px; height: 28px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.2s;
+  }
+
+  /* ── Status line ─────────────────────────────────────── */
+  #status {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    min-height: 1.2em;
+    margin-bottom: 2.5rem;
+    transition: color 0.3s;
+  }
+  #status.active { color: var(--teal); }
+  #status.error  { color: var(--red); }
+
+  /* ── Conversation feed ───────────────────────────────── */
+  #feed {
+    width: 100%;
+    max-width: 580px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    max-width: 88%;
+    animation: fade-up 0.25s ease;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .bubble.user {
+    align-self: flex-end;
+    background: var(--accent-glow);
+    border: 0.5px solid rgba(124,106,247,0.3);
+    color: #c4beff;
+  }
+
+  .bubble.agent {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+  }
+
+  .bubble-label {
+    font-size: 0.68rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Controls row ────────────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ctrl-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .ctrl-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* ── Connection dot ──────────────────────────────────── */
+  .conn-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    display: inline-block;
+    margin-right: 6px;
+    transition: background 0.3s;
+  }
+  .conn-dot.connected { background: var(--green); }
+</style>
+</head>
+<body>
+
+<h1>Voice Agent</h1>
+
+<div class="mic-wrap">
+  <div class="mic-ring" id="mic-ring"></div>
+  <button id="mic-btn" title="Hold to record, release to send">
+    <!-- Mic SVG -->
+    <svg viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="13" rx="3"/>
+      <path d="M5 10a7 7 0 0 0 14 0"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="8"  y1="22" x2="16" y2="22"/>
+    </svg>
+  </button>
+</div>
+
+<div id="status"><span class="conn-dot" id="conn-dot"></span>connecting...</div>
+
+<div id="feed"></div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="resetConversation()">reset conversation</button>
+  <button class="ctrl-btn" onclick="clearFeed()">clear display</button>
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────────────
+  let ws = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let isRecording = false;
+  let audioContext = null;
+
+  const micBtn   = document.getElementById('mic-btn');
+  const micRing  = document.getElementById('mic-ring');
+  const statusEl = document.getElementById('status');
+  const feedEl   = document.getElementById('feed');
+  const connDot  = document.getElementById('conn-dot');
+
+  // ─── WebSocket setup ─────────────────────────────────────────────────────
+  function connectWS() {
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${protocol}://${location.host}/ws`);
+
+    ws.onopen = () => {
+      connDot.classList.add('connected');
+      setStatus('ready — hold mic to speak', 'active');
+    };
+
+    ws.onclose = () => {
+      connDot.classList.remove('connected');
+      setStatus('disconnected — refreshing...', 'error');
+      setTimeout(connectWS, 2000);
+    };
+
+    ws.onerror = () => {
+      setStatus('connection error', 'error');
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      handleServerMessage(msg);
+    };
+  }
+
+  function handleServerMessage(msg) {
+    switch (msg.type) {
+      case 'status':
+        setStatus(msg.message, 'active');
+        break;
+
+      case 'transcript':
+        addBubble('you', msg.text);
+        break;
+
+      case 'reply_text':
+        addBubble('agent', msg.text);
+        break;
+
+      case 'audio':
+        setStatus('speaking...', 'active');
+        playAudioBase64(msg.data);
+        break;
+
+      case 'error':
+        setStatus(msg.message, 'error');
+        break;
+    }
+  }
+
+  // ─── Mic recording (hold to record) ──────────────────────────────────────
+  micBtn.addEventListener('mousedown',  startRecording);
+  micBtn.addEventListener('touchstart', startRecording, { passive: true });
+  micBtn.addEventListener('mouseup',    stopRecording);
+  micBtn.addEventListener('touchend',   stopRecording);
+  micBtn.addEventListener('mouseleave', () => { if (isRecording) stopRecording(); });
+
+  async function startRecording(e) {
+    e.preventDefault();
+    if (isRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+    // Request mic permission
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      setStatus('microphone permission denied', 'error');
+      return;
+    }
+
+    audioChunks = [];
+    isRecording = true;
+    micBtn.classList.add('recording');
+    micRing.classList.add('pulse');
+    setStatus('recording... release to send', 'active');
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = sendAudio;
+    mediaRecorder.start(100); // collect chunks every 100ms
+  }
+
+  function stopRecording() {
+    if (!isRecording) return;
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micRing.classList.remove('pulse');
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    }
+    setStatus('sending...', 'active');
+  }
+
+  async function sendAudio() {
+    if (!audioChunks.length) return;
+    const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+    const arrayBuffer = await blob.arrayBuffer();
+    ws.send(arrayBuffer);
+    audioChunks = [];
+  }
+
+  // ─── Audio playback ───────────────────────────────────────────────────────
+  async function playAudioBase64(base64Data) {
+    try {
+      const binary = atob(base64Data);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.onended = () => setStatus('ready — hold mic to speak', 'active');
+      source.start(0);
+    } catch (err) {
+      console.error('Audio playback error:', err);
+      setStatus('audio playback failed', 'error');
+    }
+  }
+
+  // ─── UI helpers ───────────────────────────────────────────────────────────
+  function setStatus(text, type = '') {
+    const dot = `<span class="conn-dot ${ws && ws.readyState === 1 ? 'connected' : ''}"></span>`;
+    statusEl.innerHTML = dot + text;
+    statusEl.className = type;
+  }
+
+  function addBubble(role, text) {
+    const wrap = document.createElement('div');
+    wrap.className = `bubble ${role === 'you' ? 'user' : 'agent'}`;
+    wrap.innerHTML = `<div class="bubble-label">${role}</div>${escapeHtml(text)}`;
+    feedEl.appendChild(wrap);
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function resetConversation() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'reset' }));
+      addBubble('agent', '(conversation history cleared)');
+    }
+  }
+
+  function clearFeed() {
+    feedEl.innerHTML = '';
+  }
+
+  // ─── Boot ─────────────────────────────────────────────────────────────────
+  connectWS();
+</script>
+</body>
+</html>
