@@ -5,251 +5,655 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voice Agent</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --border: rgba(255,255,255,0.08);
-    --text: #e8e8f0;
-    --muted: #6b6b80;
-    --accent: #7c6af7;
-    --accent-glow: rgba(124,106,247,0.25);
-    --teal: #2dd4bf;
-    --red: #f87171;
-    --green: #4ade80;
+    --bg: #f4efe5;
+    --bg-deep: #ece3d4;
+    --ink: #232122;
+    --ink-soft: #5d5a57;
+    --card: rgba(255, 250, 242, 0.72);
+    --card-strong: #fffaf2;
+    --line: rgba(35, 33, 34, 0.12);
+    --accent: #d9481e;
+    --accent-soft: rgba(217, 72, 30, 0.16);
+    --teal: #197c77;
+    --teal-soft: rgba(25, 124, 119, 0.15);
+    --danger: #ad1f1f;
+    --success: #2f8248;
+    --shadow: 0 20px 45px rgba(47, 30, 14, 0.14);
   }
 
   body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--ink);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem;
+    background:
+      radial-gradient(circle at 80% 15%, rgba(217, 72, 30, 0.15), transparent 32%),
+      radial-gradient(circle at 15% 75%, rgba(25, 124, 119, 0.14), transparent 34%),
+      linear-gradient(145deg, var(--bg) 0%, var(--bg-deep) 100%);
+    padding: 24px;
   }
 
-  h1 {
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: var(--muted);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 3rem;
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    width: 260px;
+    height: 260px;
+    border-radius: 999px;
+    filter: blur(4px);
+    opacity: 0.55;
+    animation: drift 12s ease-in-out infinite;
   }
 
-  /* ── Mic button ─────────────────────────────────────── */
+  body::before {
+    top: -70px;
+    right: 8%;
+    background: rgba(217, 72, 30, 0.22);
+  }
+
+  body::after {
+    left: -80px;
+    bottom: 8%;
+    background: rgba(25, 124, 119, 0.2);
+    animation-delay: -4s;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(14px) scale(1.05); }
+  }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+  }
+
+  .hero {
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-radius: 18px;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    display: grid;
+    gap: 12px;
+    animation: rise 0.7s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.7rem, 2.6vw, 2.5rem);
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+  }
+
+  .hero p {
+    color: var(--ink-soft);
+    max-width: 75ch;
+    line-height: 1.6;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 10px;
+  }
+
+  .stat {
+    background: var(--card-strong);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .stat span {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+  }
+
+  .stat strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 1.06rem;
+  }
+
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-radius: 18px;
+    padding: 18px;
+    backdrop-filter: blur(4px);
+    animation: rise 0.7s ease both;
+  }
+
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.28rem;
+    margin-bottom: 4px;
+  }
+
+  .card-note {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .voice-core {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
   .mic-wrap {
     position: relative;
-    margin-bottom: 2.5rem;
+    width: 154px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
   }
 
-  .mic-ring {
+  .mic-ring,
+  .mic-ring-secondary {
     position: absolute;
-    inset: -12px;
-    border-radius: 50%;
-    border: 1.5px solid var(--accent);
-    opacity: 0;
-    transform: scale(0.85);
-    transition: opacity 0.3s, transform 0.3s;
+    inset: 0;
+    border-radius: 999px;
+    border: 2px solid transparent;
     pointer-events: none;
   }
 
-  .mic-ring.pulse {
-    animation: ring-pulse 1.4s ease-in-out infinite;
+  .mic-ring {
+    border-color: rgba(217, 72, 30, 0.45);
+    transform: scale(0.86);
+    opacity: 0;
   }
 
-  @keyframes ring-pulse {
-    0%, 100% { opacity: 0.15; transform: scale(0.9); }
-    50%       { opacity: 0.5;  transform: scale(1.08); }
+  .mic-ring-secondary {
+    border-color: rgba(25, 124, 119, 0.34);
+    transform: scale(0.92);
+    opacity: 0;
+  }
+
+  .mic-wrap.active .mic-ring {
+    animation: ring-a 1.25s ease-in-out infinite;
+  }
+
+  .mic-wrap.active .mic-ring-secondary {
+    animation: ring-b 1.55s ease-in-out infinite;
+  }
+
+  @keyframes ring-a {
+    0%, 100% { opacity: 0.2; transform: scale(0.88); }
+    50% { opacity: 0.58; transform: scale(1.03); }
+  }
+
+  @keyframes ring-b {
+    0%, 100% { opacity: 0.14; transform: scale(0.95); }
+    50% { opacity: 0.45; transform: scale(1.09); }
   }
 
   #mic-btn {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: var(--surface);
+    width: 96px;
+    height: 96px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: radial-gradient(circle at 28% 25%, #fffaf5 0%, #f6efe5 48%, #efe4d4 100%);
+    box-shadow: 0 12px 24px rgba(59, 40, 18, 0.16);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.2s, background 0.2s, transform 0.15s;
-    position: relative;
-    z-index: 1;
+    display: grid;
+    place-items: center;
+    transition: transform 120ms ease, border-color 200ms ease, box-shadow 200ms ease;
   }
 
-  #mic-btn:hover { border-color: var(--accent); background: rgba(124,106,247,0.08); }
-  #mic-btn:active { transform: scale(0.95); }
-  #mic-btn.recording { border-color: var(--red); background: rgba(248,113,113,0.1); }
-  #mic-btn.recording svg { stroke: var(--red); }
+  #mic-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(217, 72, 30, 0.45);
+    box-shadow: 0 14px 28px rgba(59, 40, 18, 0.2);
+  }
+
+  #mic-btn:active {
+    transform: scale(0.96);
+  }
+
+  #mic-btn.recording {
+    border-color: rgba(217, 72, 30, 0.75);
+    box-shadow: 0 16px 30px rgba(217, 72, 30, 0.24);
+  }
+
+  #mic-btn.playing {
+    border-color: rgba(25, 124, 119, 0.72);
+    box-shadow: 0 16px 30px rgba(25, 124, 119, 0.24);
+  }
 
   #mic-btn svg {
-    width: 28px; height: 28px;
-    stroke: var(--muted);
+    width: 32px;
+    height: 32px;
+    stroke: var(--ink);
     fill: none;
-    stroke-width: 1.8;
+    stroke-width: 1.9;
     stroke-linecap: round;
     stroke-linejoin: round;
-    transition: stroke 0.2s;
   }
 
-  /* ── Status line ─────────────────────────────────────── */
+  .meter {
+    display: grid;
+    grid-auto-flow: column;
+    gap: 4px;
+    align-items: end;
+    height: 26px;
+  }
+
+  .meter span {
+    width: 5px;
+    border-radius: 99px;
+    background: linear-gradient(180deg, rgba(217, 72, 30, 0.9), rgba(25, 124, 119, 0.85));
+    animation: bounce 0.75s ease-in-out infinite;
+    animation-play-state: paused;
+    height: 10px;
+  }
+
+  .meter.active span {
+    animation-play-state: running;
+  }
+
+  .meter span:nth-child(2) { animation-delay: 0.08s; }
+  .meter span:nth-child(3) { animation-delay: 0.16s; }
+  .meter span:nth-child(4) { animation-delay: 0.24s; }
+  .meter span:nth-child(5) { animation-delay: 0.32s; }
+  .meter span:nth-child(6) { animation-delay: 0.4s; }
+  .meter span:nth-child(7) { animation-delay: 0.48s; }
+
+  @keyframes bounce {
+    0%, 100% { height: 8px; opacity: 0.5; }
+    50% { height: 24px; opacity: 1; }
+  }
+
   #status {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-    min-height: 1.2em;
-    margin-bottom: 2.5rem;
-    transition: color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 1.3rem;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+    padding: 8px 12px;
   }
-  #status.active { color: var(--teal); }
-  #status.error  { color: var(--red); }
 
-  /* ── Conversation feed ───────────────────────────────── */
+  #status.active {
+    color: var(--teal);
+    border-color: rgba(25, 124, 119, 0.34);
+  }
+
+  #status.error {
+    color: var(--danger);
+    border-color: rgba(173, 31, 31, 0.35);
+  }
+
+  .conn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--danger);
+    display: inline-block;
+    transition: background 180ms ease;
+  }
+
+  .conn-dot.connected {
+    background: var(--success);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    background: #fff7ee;
+    color: var(--ink-soft);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 170ms ease;
+  }
+
+  .chip:hover {
+    color: var(--ink);
+    border-color: rgba(217, 72, 30, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .feed-wrap {
+    display: grid;
+    gap: 10px;
+  }
+
   #feed {
-    width: 100%;
-    max-width: 580px;
+    min-height: 250px;
+    max-height: 420px;
+    overflow: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    padding-right: 6px;
+  }
+
+  #feed::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  #feed::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 999px;
+  }
+
+  .empty {
+    border: 1px dashed var(--line);
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    padding: 14px;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    line-height: 1.45;
   }
 
   .bubble {
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    max-width: 88%;
-    animation: fade-up 0.25s ease;
-  }
-
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    max-width: 90%;
+    border-radius: 14px;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    animation: rise 0.25s ease;
   }
 
   .bubble.user {
     align-self: flex-end;
-    background: var(--accent-glow);
-    border: 0.5px solid rgba(124,106,247,0.3);
-    color: #c4beff;
+    background: var(--accent-soft);
+    border-color: rgba(217, 72, 30, 0.35);
   }
 
   .bubble.agent {
     align-self: flex-start;
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    color: var(--text);
+    background: var(--teal-soft);
+    border-color: rgba(25, 124, 119, 0.35);
+  }
+
+  .bubble-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 6px;
   }
 
   .bubble-label {
-    font-size: 0.68rem;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    margin-bottom: 4px;
-    letter-spacing: 0.06em;
+    font-size: 0.73rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
     text-transform: uppercase;
+    font-weight: 700;
   }
 
-  /* ── Controls row ────────────────────────────────────── */
+  .bubble-time {
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+
+  .bubble-text {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
   .controls {
+    margin-top: 10px;
     display: flex;
-    gap: 10px;
-    margin-top: 2rem;
     flex-wrap: wrap;
-    justify-content: center;
+    gap: 10px;
   }
 
   .ctrl-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 6px 14px;
-    border-radius: 6px;
-    border: 0.5px solid var(--border);
-    background: transparent;
-    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card-strong);
+    color: var(--ink-soft);
+    padding: 8px 12px;
+    font-size: 0.8rem;
     cursor: pointer;
-    letter-spacing: 0.08em;
-    transition: color 0.2s, border-color 0.2s;
+    transition: all 170ms ease;
   }
-  .ctrl-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
 
-  /* ── Connection dot ──────────────────────────────────── */
-  .conn-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--red);
-    display: inline-block;
-    margin-right: 6px;
-    transition: background 0.3s;
+  .ctrl-btn:hover {
+    border-color: rgba(35, 33, 34, 0.25);
+    color: var(--ink);
   }
-  .conn-dot.connected { background: var(--green); }
+
+  .kbd {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.65);
+    padding: 1px 7px;
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+  }
+
+  .side-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .side-item {
+    background: var(--card-strong);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .side-item strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.86rem;
+  }
+
+  .side-item p {
+    color: var(--ink-soft);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 960px) {
+    .panel-grid {
+      grid-template-columns: 1fr;
+    }
+
+    body {
+      padding: 16px;
+    }
+
+    .card,
+    .hero {
+      padding: 14px;
+    }
+
+    #feed {
+      max-height: 360px;
+    }
+  }
 </style>
 </head>
 <body>
+<main class="app">
+  <section class="hero">
+    <h1>Voice Agent Studio</h1>
+    <p>Press and hold the mic to talk. Release to send your voice. Watch the live activity meter, connection health, and response timeline as your assistant thinks and speaks back.</p>
+    <div class="stats">
+      <div class="stat"><span>Connection</span><strong id="stat-connection">Connecting...</strong></div>
+      <div class="stat"><span>Total Turns</span><strong id="stat-turns">0</strong></div>
+      <div class="stat"><span>Last Transcript</span><strong id="stat-last">-</strong></div>
+      <div class="stat"><span>Last Round Trip</span><strong id="stat-latency">-</strong></div>
+    </div>
+  </section>
 
-<h1>Voice Agent</h1>
+  <section class="panel-grid">
+    <article class="card">
+      <h2>Conversation</h2>
+      <p class="card-note">Use <span class="kbd">Space</span> to hold the mic on desktop. Tap chips for quick guidance prompts.</p>
 
-<div class="mic-wrap">
-  <div class="mic-ring" id="mic-ring"></div>
-  <button id="mic-btn" title="Hold to record, release to send">
-    <!-- Mic SVG -->
-    <svg viewBox="0 0 24 24">
-      <rect x="9" y="2" width="6" height="13" rx="3"/>
-      <path d="M5 10a7 7 0 0 0 14 0"/>
-      <line x1="12" y1="19" x2="12" y2="22"/>
-      <line x1="8"  y1="22" x2="16" y2="22"/>
-    </svg>
-  </button>
-</div>
+      <div class="voice-core">
+        <div class="mic-wrap" id="mic-wrap">
+          <div class="mic-ring" id="mic-ring"></div>
+          <div class="mic-ring-secondary"></div>
+          <button id="mic-btn" title="Hold to record, release to send" aria-label="Microphone button">
+            <svg viewBox="0 0 24 24">
+              <rect x="9" y="2" width="6" height="13" rx="3"></rect>
+              <path d="M5 10a7 7 0 0 0 14 0"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+              <line x1="8" y1="22" x2="16" y2="22"></line>
+            </svg>
+          </button>
+        </div>
 
-<div id="status"><span class="conn-dot" id="conn-dot"></span>connecting...</div>
+        <div class="meter" id="meter" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
 
-<div id="feed"></div>
+        <div id="status"><span class="conn-dot" id="conn-dot"></span>connecting...</div>
 
-<div class="controls">
-  <button class="ctrl-btn" onclick="resetConversation()">reset conversation</button>
-  <button class="ctrl-btn" onclick="clearFeed()">clear display</button>
-</div>
+        <div class="chips">
+          <button class="chip" data-tip="Try speaking in short sentences for snappier replies.">Latency tip</button>
+          <button class="chip" data-tip="You can interrupt between replies by starting a new recording.">Flow tip</button>
+          <button class="chip" data-tip="Use reset conversation to clear context if the assistant drifts.">Context tip</button>
+        </div>
+      </div>
+
+      <div class="feed-wrap">
+        <div id="feed">
+          <div class="empty" id="feed-empty">No messages yet. Start speaking to see transcript and assistant responses appear here with timestamps.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" onclick="resetConversation()">reset conversation</button>
+        <button class="ctrl-btn" onclick="clearFeed()">clear display</button>
+        <button class="ctrl-btn" onclick="exportConversation()">export transcript</button>
+      </div>
+    </article>
+
+    <aside class="card">
+      <h2>Session Details</h2>
+      <p class="card-note">Live session telemetry updates as you talk.</p>
+
+      <div class="side-list">
+        <div class="side-item">
+          <strong>Current Phase</strong>
+          <p id="phase-text">Connecting to websocket...</p>
+        </div>
+        <div class="side-item">
+          <strong>Audio Pipeline</strong>
+          <p id="audio-text">Waiting for microphone input.</p>
+        </div>
+        <div class="side-item">
+          <strong>Assistant Activity</strong>
+          <p id="assistant-text">No response yet.</p>
+        </div>
+      </div>
+    </aside>
+  </section>
+</main>
 
 <script>
-  // ─── State ───────────────────────────────────────────────────────────────
   let ws = null;
   let mediaRecorder = null;
   let audioChunks = [];
   let isRecording = false;
+  let isSpaceDown = false;
+  let isPlaying = false;
   let audioContext = null;
+  let recordStartedAt = null;
+  let lastSendAt = null;
+  let conversationLog = [];
+  const stats = {
+    totalTurns: 0,
+    lastTranscript: '-',
+    lastLatencyMs: null
+  };
 
-  const micBtn   = document.getElementById('mic-btn');
-  const micRing  = document.getElementById('mic-ring');
+  const micBtn = document.getElementById('mic-btn');
+  const micWrap = document.getElementById('mic-wrap');
   const statusEl = document.getElementById('status');
-  const feedEl   = document.getElementById('feed');
-  const connDot  = document.getElementById('conn-dot');
+  const feedEl = document.getElementById('feed');
+  const connDot = document.getElementById('conn-dot');
+  const meterEl = document.getElementById('meter');
+  const phaseTextEl = document.getElementById('phase-text');
+  const audioTextEl = document.getElementById('audio-text');
+  const assistantTextEl = document.getElementById('assistant-text');
+  const statConnectionEl = document.getElementById('stat-connection');
+  const statTurnsEl = document.getElementById('stat-turns');
+  const statLastEl = document.getElementById('stat-last');
+  const statLatencyEl = document.getElementById('stat-latency');
+  const feedEmptyEl = document.getElementById('feed-empty');
 
-  // ─── WebSocket setup ─────────────────────────────────────────────────────
+  for (const chip of document.querySelectorAll('.chip')) {
+    chip.addEventListener('click', () => {
+      setStatus(chip.dataset.tip, 'active');
+      phaseTextEl.textContent = 'Tip shared in status area.';
+    });
+  }
+
   function connectWS() {
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
     ws = new WebSocket(`${protocol}://${location.host}/ws`);
+    setStatConnection('Connecting...');
 
     ws.onopen = () => {
       connDot.classList.add('connected');
+      setStatConnection('Connected');
       setStatus('ready — hold mic to speak', 'active');
+      phaseTextEl.textContent = 'Connection healthy. Waiting for user input.';
     };
 
     ws.onclose = () => {
       connDot.classList.remove('connected');
+      setStatConnection('Reconnecting...');
       setStatus('disconnected — refreshing...', 'error');
+      phaseTextEl.textContent = 'Socket lost. Reconnecting automatically.';
       setTimeout(connectWS, 2000);
     };
 
     ws.onerror = () => {
+      setStatConnection('Error');
       setStatus('connection error', 'error');
+      phaseTextEl.textContent = 'WebSocket reported an error.';
     };
 
     ws.onmessage = (event) => {
@@ -262,81 +666,123 @@
     switch (msg.type) {
       case 'status':
         setStatus(msg.message, 'active');
+        phaseTextEl.textContent = msg.message;
         break;
 
       case 'transcript':
         addBubble('you', msg.text);
+        stats.lastTranscript = truncate(msg.text, 42);
+        updateStats();
+        audioTextEl.textContent = 'Transcript captured and queued for LLM.';
         break;
 
       case 'reply_text':
         addBubble('agent', msg.text);
+        assistantTextEl.textContent = `Reply received (${msg.text.length} chars).`;
+        stats.totalTurns += 1;
+        if (lastSendAt) {
+          stats.lastLatencyMs = Date.now() - lastSendAt;
+          lastSendAt = null;
+        }
+        updateStats();
         break;
 
       case 'audio':
         setStatus('speaking...', 'active');
+        audioTextEl.textContent = 'Playing synthesized voice output.';
         playAudioBase64(msg.data);
         break;
 
       case 'error':
         setStatus(msg.message, 'error');
+        phaseTextEl.textContent = 'Server returned an error.';
         break;
     }
   }
 
-  // ─── Mic recording (hold to record) ──────────────────────────────────────
-  micBtn.addEventListener('mousedown',  startRecording);
-  micBtn.addEventListener('touchstart', startRecording, { passive: true });
-  micBtn.addEventListener('mouseup',    stopRecording);
-  micBtn.addEventListener('touchend',   stopRecording);
-  micBtn.addEventListener('mouseleave', () => { if (isRecording) stopRecording(); });
+  micBtn.addEventListener('pointerdown', startRecording);
+  micBtn.addEventListener('pointerup', stopRecording);
+  micBtn.addEventListener('pointerleave', () => {
+    if (isRecording) stopRecording();
+  });
+  micBtn.addEventListener('pointercancel', stopRecording);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code !== 'Space' || isSpaceDown) return;
+    if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    e.preventDefault();
+    isSpaceDown = true;
+    startRecording(e);
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    isSpaceDown = false;
+    stopRecording();
+  });
 
   async function startRecording(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (isRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
 
-    // Request mic permission
     let stream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
       setStatus('microphone permission denied', 'error');
+      phaseTextEl.textContent = 'Microphone permission denied.';
       return;
     }
 
     audioChunks = [];
     isRecording = true;
+    recordStartedAt = Date.now();
     micBtn.classList.add('recording');
-    micRing.classList.add('pulse');
+    meterEl.classList.add('active');
+    micWrap.classList.add('active');
     setStatus('recording... release to send', 'active');
+    phaseTextEl.textContent = 'Recording voice input.';
+    audioTextEl.textContent = 'Collecting audio frames from microphone.';
 
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+    let options = { mimeType: 'audio/webm;codecs=opus' };
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+      options = {};
+    }
+
+    mediaRecorder = new MediaRecorder(stream, options);
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
     mediaRecorder.onstop = sendAudio;
-    mediaRecorder.start(100); // collect chunks every 100ms
+    mediaRecorder.start(100);
   }
 
   function stopRecording() {
     if (!isRecording) return;
     isRecording = false;
     micBtn.classList.remove('recording');
-    micRing.classList.remove('pulse');
+    meterEl.classList.remove('active');
+    micWrap.classList.remove('active');
 
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
-      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      mediaRecorder.stream.getTracks().forEach((t) => t.stop());
     }
     setStatus('sending...', 'active');
+    phaseTextEl.textContent = 'Uploading audio for transcription.';
   }
 
   async function sendAudio() {
-    if (!audioChunks.length) return;
+    if (!audioChunks.length || !ws || ws.readyState !== WebSocket.OPEN) return;
     const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const arrayBuffer = await blob.arrayBuffer();
+    lastSendAt = Date.now();
+    const spokenMs = recordStartedAt ? Date.now() - recordStartedAt : null;
+    audioTextEl.textContent = spokenMs ? `Audio sent (${(spokenMs / 1000).toFixed(1)}s of speech).` : 'Audio sent to server.';
     ws.send(arrayBuffer);
     audioChunks = [];
+    recordStartedAt = null;
   }
 
-  // ─── Audio playback ───────────────────────────────────────────────────────
   async function playAudioBase64(base64Data) {
     try {
       const binary = atob(base64Data);
@@ -349,15 +795,24 @@
       const source = audioContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
-      source.onended = () => setStatus('ready — hold mic to speak', 'active');
+      isPlaying = true;
+      micBtn.classList.add('playing');
+      meterEl.classList.add('active');
+      source.onended = () => {
+        isPlaying = false;
+        micBtn.classList.remove('playing');
+        meterEl.classList.remove('active');
+        setStatus('ready — hold mic to speak', 'active');
+        audioTextEl.textContent = 'Playback complete. Ready for next input.';
+      };
       source.start(0);
     } catch (err) {
       console.error('Audio playback error:', err);
       setStatus('audio playback failed', 'error');
+      audioTextEl.textContent = 'Audio playback failed.';
     }
   }
 
-  // ─── UI helpers ───────────────────────────────────────────────────────────
   function setStatus(text, type = '') {
     const dot = `<span class="conn-dot ${ws && ws.readyState === 1 ? 'connected' : ''}"></span>`;
     statusEl.innerHTML = dot + text;
@@ -365,10 +820,20 @@
   }
 
   function addBubble(role, text) {
+    if (feedEmptyEl) feedEmptyEl.remove();
     const wrap = document.createElement('div');
     wrap.className = `bubble ${role === 'you' ? 'user' : 'agent'}`;
-    wrap.innerHTML = `<div class="bubble-label">${role}</div>${escapeHtml(text)}`;
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    wrap.innerHTML = `
+      <div class="bubble-head">
+        <div class="bubble-label">${role}</div>
+        <div class="bubble-time">${time}</div>
+      </div>
+      <div class="bubble-text">${escapeHtml(text)}</div>
+    `;
     feedEl.appendChild(wrap);
+    conversationLog.push({ role, text, time });
     wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }
 
@@ -376,18 +841,61 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  function truncate(str, len) {
+    if (!str || str.length <= len) return str || '-';
+    return `${str.slice(0, len - 1)}...`;
+  }
+
+  function setStatConnection(text) {
+    statConnectionEl.textContent = text;
+  }
+
+  function updateStats() {
+    statTurnsEl.textContent = String(stats.totalTurns);
+    statLastEl.textContent = stats.lastTranscript;
+    statLatencyEl.textContent = stats.lastLatencyMs ? `${(stats.lastLatencyMs / 1000).toFixed(2)}s` : '-';
+  }
+
   function resetConversation() {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'reset' }));
       addBubble('agent', '(conversation history cleared)');
+      assistantTextEl.textContent = 'Conversation context reset on server.';
     }
   }
 
   function clearFeed() {
     feedEl.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.id = 'feed-empty';
+    empty.textContent = 'Display cleared. New turns will appear here.';
+    feedEl.appendChild(empty);
+    conversationLog = [];
+    stats.totalTurns = 0;
+    stats.lastTranscript = '-';
+    stats.lastLatencyMs = null;
+    updateStats();
+    assistantTextEl.textContent = 'Display reset locally.';
   }
 
-  // ─── Boot ─────────────────────────────────────────────────────────────────
+  function exportConversation() {
+    if (!conversationLog.length) {
+      setStatus('nothing to export yet', 'error');
+      return;
+    }
+    const lines = conversationLog.map((item) => `[${item.time}] ${item.role.toUpperCase()}: ${item.text}`);
+    const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `voice-agent-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setStatus('transcript exported', 'active');
+  }
+
+  updateStats();
   connectWS();
 </script>
 </body>
